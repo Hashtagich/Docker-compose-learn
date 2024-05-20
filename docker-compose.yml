@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+
+  prediction:
+    build:
+      context: ./prediction
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres-db
+
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: prediction
+      POSTGRES_USER: prediction
+      POSTGRES_PASSWORD: prediction
+    ports:
+      - "5432:5432"
+
+
