@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
 
-  postgres-db:
+  postgres:
     image: postgres:latest
     container_name: postgres
     environment:
@@ -10,6 +10,25 @@ services:
       POSTGRES_USER: prediction
       POSTGRES_PASSWORD: prediction
     ports:
-      - "5433:5432"
+      - "5432:5432"
 
 
+  prediction:
+    build:
+      context: ./prediction
+    container_name: prediction
+    ports:
+      - "8001:8000"
+    depends_on:
+      - postgres
+    environment:
+      - SECRET_KEY
+      - TIME_ZONE
+      - DEBUG
+      - DB_NAME
+      - DB_USER
+      - DB_PASSWORD
+      - DB_HOST
+      - DB_PORT
+    env_file:
+      - .env.docker
