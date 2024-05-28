@@ -34,7 +34,7 @@ services:
       - DB_PORT
     env_file:
       - .env.docker
-    restart: on-failure:5
+    restart: on-failure
 
 
   nginx:
