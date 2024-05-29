@@ -1,18 +1,31 @@
-FROM python:3.11-slim
+# pull official base image
+FROM python:3.11.4-slim-buster
 
-WORKDIR /app
+# set work directory
+WORKDIR /usr/src/app
 
-COPY . /app/
+RUN mkdir /usr/src/app/staticfiles
+RUN mkdir /usr/src/app/mediafiles
 
-RUN apt-get update && apt-get install -y libpq-dev && apt-get clean
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies
+RUN apt-get update && apt-get install -y netcat
+
+# install dependencie
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
 RUN pip install -r requirements.txt
-RUN pip install gunicorn
 
+# copy entrypoint.sh
+COPY ./entrypoint.sh .
+RUN sed -i 's/\r$//g' /usr/src/app/entrypoint.sh
+RUN chmod +x /usr/src/app/entrypoint.sh
 
-CMD python manage.py migrate \
-    && python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'root@example.com', 'admin')" \
-    && python manage.py clear_db \
-    && python manage.py initialize_db \
-    && python manage.py collectstatic --no-input \
-    && ls /app/static \
-    && gunicorn prediction.wsgi:application --bind 0.0.0.0:8000 --log-level info
+# copy project
+COPY . .
+
+# run entrypoint.sh
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
